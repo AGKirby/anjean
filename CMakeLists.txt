@@ -8,18 +8,38 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(SDL3 REQUIRED CONFIG)
 
-add_executable(anjean
+add_executable(anjean)
+
+target_sources(anjean PRIVATE
     src/main.cpp
 
     src/window/Window.cpp
 
+    src/Orchestrator/Orchestrator.cpp
+
+    src/runtime/Runtime.cpp
+    src/runtime/input/InputManager.cpp
+
     src/rendering/Renderer.cpp
     src/rendering/RendererBackendFactory.cpp
+    src/rendering/Utilities.cpp
 )
 
 target_link_libraries(anjean PRIVATE
     SDL3::SDL3
 )
+
+target_compile_options(anjean PRIVATE
+    -g
+    -O0
+    -fsanitize=address
+    -fno-omit-frame-pointer
+)
+
+target_link_options(anjean PRIVATE
+    -fsanitize=address
+)
+
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_sources(anjean PRIVATE

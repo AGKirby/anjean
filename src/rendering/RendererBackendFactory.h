@@ -3,14 +3,14 @@
 #include <memory>
 
 #include "RenderTypes.h"
+#include "../window/Window.h"
 
-namespace Anjean
+namespace Anjean::Rendering
 {
-    class Window;
     class IRenderBackend;
 
     std::unique_ptr<IRenderBackend> CreateRendererBackend(
-        Window& window,
+        Anjean::Window& window,
         const RendererConfig& config
     );
 }

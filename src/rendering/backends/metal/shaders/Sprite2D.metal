@@ -61,6 +61,13 @@ fragment float4 sprite_fragment_shader(
 //     VertexOut in [[stage_in]],
 //     texture2d<float, access::sample> baseColor [[texture(0)]]
 // ) {
+//     return float4(1.0, 0.0, 0.0, 1.0);
+// }
+
+// fragment float4 sprite_fragment_shader(
+//     VertexOut in [[stage_in]],
+//     texture2d<float, access::sample> baseColor [[texture(0)]]
+// ) {
 //     return float4(in.textureCoordinate.x, in.textureCoordinate.y, 0.0, 1.0);
 // }
 

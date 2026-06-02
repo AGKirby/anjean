@@ -3,16 +3,17 @@
 #include <memory>
 
 #include "RenderTypes.h"
+#include "../runtime/RuntimeTypes.h"
+#include "../window/Window.h"
 
-namespace Anjean
+namespace Anjean::Rendering
 {
-    class Window;
     class IRenderBackend;
 
     class Renderer
     {
     public:
-        explicit Renderer(Window& window, const RendererConfig& config = {});
+        explicit Renderer(Anjean::Window& window, const RendererConfig& config = {});
         ~Renderer();
 
         Renderer(const Renderer&) = delete;
@@ -25,8 +26,10 @@ namespace Anjean
         TextureHandle createTexture(TextureDesc& desc);
         BufferHandle createBuffer(const BufferDesc& desc);
         PipelineHandle createPipeline(const PipelineDesc& desc);
+        PipelineHandle createSpritePipeline();
+        std::pair<decltype(BufferHandle::id), std::optional<decltype(TextureHandle::id)>> loadMeshToGPU(Mesh pMesh);
         void draw(const DrawCommand& command);
-        void drawSprite(const PipelineHandle& pPipeline, const Mesh& pMesh, const TextureHandle& pTexture, const ObjectUniformHandle& pObjectUniform);
+        void drawSprite(const PipelineHandle& pPipeline, const Core::MeshData& pMesh, const std::optional<TextureHandle>& pTexture, const ObjectUniformHandle& pObjectUniform);
         void endFrame();
 
     private:

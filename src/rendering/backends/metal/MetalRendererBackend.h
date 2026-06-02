@@ -1,10 +1,12 @@
 #pragma once
 
 #include "../../IRenderBackend.h"
+#include "../../../window/Window.h"
+#include "../../../runtime/Runtime.h"
 
 #include <memory>
 
-namespace Anjean
+namespace Anjean::Rendering
 {
     struct MetalVertex2D
     {
@@ -12,12 +14,10 @@ namespace Anjean
         float textureCoordinate[2];
     };
 
-    class Window;
-
     class MetalRendererBackend final : public IRenderBackend
     {
     public:
-        explicit MetalRendererBackend(Window& window);
+        explicit MetalRendererBackend(Anjean::Window& window);
         ~MetalRendererBackend() override;
 
         MetalRendererBackend(const MetalRendererBackend&) = delete;
@@ -32,8 +32,8 @@ namespace Anjean
         TextureHandle createTexture(TextureDesc& desc) override;
         PipelineHandle createPipeline(const PipelineDesc& desc) override;
         void draw(const DrawCommand& command) override;
-        void drawSprite(const PipelineHandle& pPipeline, const Mesh& pMesh, const TextureHandle& pTexture, const ObjectUniformHandle& pObjectUniform) override;
-
+        void drawSprite(const PipelineHandle& pPipeline, const Core::MeshData& pMesh, const std::optional<TextureHandle>& pTexture, const ObjectUniformHandle& pObjectUniform) override;
+        std::pair<decltype(BufferHandle::id), std::optional<decltype(TextureHandle::id)>> loadMeshToGPU(Mesh pMesh) override;
         void endFrame() override;
 
     private:

@@ -4,27 +4,28 @@
 #include <memory>
 
 #include "../rendering/RenderTypes.h"
+#include "../rendering/Renderer.h"
+#include "../runtime/objects/GameObject.h"
+#include "Runtime.h"
 
 namespace Anjean {
   class Window;
-  class Renderer;
 }
 
-namespace Anjean::Core
+namespace Anjean::Runtime
 {
-    class GameObject;
-
     struct AppState
     {
         Uint64 last_step = 0;
 
         std::unique_ptr<Anjean::Window> window;
-        std::unique_ptr<Anjean::Renderer> renderer;
+        std::unique_ptr<Anjean::Rendering::Renderer> renderer;
+        std::unique_ptr<Runtime> manager;
 
-        PipelineHandle basicColorPipeline;
-        TextureHandle demoTexture;
-        Mesh demoMesh;
-        Mesh demoMesh2;
+        Rendering::PipelineHandle basicColorPipeline;
+        Rendering::TextureHandle demoTexture;
+        Rendering::Mesh demoMesh;
+        Rendering::Mesh demoMesh2;
         float rotationSpeed;
         simd_float3 cameraPos;
         simd_float4x4 cameraMatrix;

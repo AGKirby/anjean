@@ -1,5 +1,6 @@
 #include "MetalRendererBackend.h"
 #include "../../../window/Window.h"
+#include "../../../runtime/RuntimeTypes.h"
 
 #include <SDL3/SDL_metal.h>
 
@@ -11,7 +12,7 @@
 
 #include <stdexcept>
 
-namespace Anjean
+namespace Anjean::Rendering
 {
     static NS::String* MakeNSString(const char* text)
     {
@@ -294,6 +295,7 @@ namespace Anjean
         << "Width, Height: "
         << static_cast<int>(desc.width) << ", "
         << static_cast<int>(desc.height) << ", "
+        << static_cast<int>(desc.channels) << ", "
         << std::endl;
         stbi_uc* pixels = stbi_load(
             desc.filename,
@@ -345,6 +347,7 @@ namespace Anjean
         << "Width, Height: "
         << static_cast<int>(desc.width) << ", "
         << static_cast<int>(desc.height) << ", "
+        << static_cast<int>(desc.channels) << ", "
         << std::endl;
 
         // stbi_image_free(pixels);
@@ -363,7 +366,7 @@ namespace Anjean
         return m_impl->createPipeline(desc);
     }
 
-    MetalRendererBackend::MetalRendererBackend(Window& window)
+    MetalRendererBackend::MetalRendererBackend(Anjean::Window& window)
         : m_impl(std::make_unique<Impl>())
     {
         NS::AutoreleasePool* pool = NS::AutoreleasePool::alloc()->init();
@@ -553,6 +556,28 @@ namespace Anjean
         pool->release();
     }
 
+    std::pair<decltype(BufferHandle::id), std::optional<decltype(TextureHandle::id)>> MetalRendererBackend::loadMeshToGPU(Mesh pMesh)
+    {
+      Anjean::Rendering::BufferDesc desc;
+      // desc.data = &pMesh.vertices;
+      // desc.size = sizeof(&pMesh.vertices[0]) * pMesh.vertexCount;
+      desc.data = pMesh.vertices.data();
+      desc.size = pMesh.vertices.size() * sizeof(pMesh.vertices[0]);
+
+      Anjean::Rendering::Mesh mesh;
+      mesh.vertexBuffer = createBuffer(desc);
+      mesh.vertexCount = pMesh.vertexCount;
+
+      std::optional<decltype(TextureHandle::id)> returnTextureId = std::nullopt;
+      if (pMesh.textureDesc.has_value()) {
+        TextureDesc& texDesc = pMesh.textureDesc.value();
+        auto textureHandle = createTexture(texDesc);
+        returnTextureId = textureHandle.id;
+      }
+
+      return {mesh.vertexBuffer.id, returnTextureId };
+    }
+    
     void MetalRendererBackend::draw(const DrawCommand& command)
     {
         if (!m_impl->renderEncoder)
@@ -594,7 +619,7 @@ namespace Anjean
         argumentTable->release();
     }
     
-    void MetalRendererBackend::drawSprite(const PipelineHandle& pPipeline, const Mesh& pMesh, const TextureHandle& pTexture, const ObjectUniformHandle& pObjectUniform)
+    void MetalRendererBackend::drawSprite(const PipelineHandle& pPipeline, const Core::MeshData& pMesh, const std::optional<TextureHandle>& pTexture, const ObjectUniformHandle& pObjectUniform)
     {
         if (!m_impl->renderEncoder)
         {
@@ -604,10 +629,16 @@ namespace Anjean
         MTL::RenderPipelineState* pipeline =
             m_impl->getPipeline(pPipeline);
         MTL::Buffer* vertextBuff =
-            m_impl->getBuffer(pMesh.vertexBuffer);
-        MTL::Texture* texture =
-            m_impl->getTexture(pTexture);
-
+            m_impl->getBuffer({pMesh.id});
+        
+        MTL::Texture* texture;
+        if (pTexture.has_value()) {
+          texture =
+              m_impl->getTexture(pTexture.value());
+        } else {
+          texture = nullptr;
+        }
+    
         MTL::Buffer* objectUniformBuffer = m_impl->device->newBuffer(
           &pObjectUniform,
           sizeof(ObjectUniformHandle),
@@ -638,12 +669,15 @@ namespace Anjean
         auto* fragmentTableDesc = MTL4::ArgumentTableDescriptor::alloc()->init();
         fragmentTableDesc->setMaxTextureBindCount(1);
 
-        MTL4::ArgumentTable* fragmentTable =
-            m_impl->device->newArgumentTable(fragmentTableDesc, nullptr);
+        MTL4::ArgumentTable* fragmentTable = nullptr;
+
+        if (texture){ 
+          fragmentTable = m_impl->device->newArgumentTable(fragmentTableDesc, nullptr);
+        }
 
         fragmentTableDesc->release();
 
-        if (!fragmentTable)
+        if (!fragmentTable && texture)
         {
             fragmentTable->release();
             throw std::runtime_error("Failed to create fragment argument table.");
@@ -651,19 +685,23 @@ namespace Anjean
 
         vertexTable->setAddress(vertextBuff->gpuAddress(), 0);
         vertexTable->setAddress(objectUniformBuffer->gpuAddress(), 1);
-        fragmentTable->setTexture(texture->gpuResourceID(), 0);
+        if (texture) {
+          fragmentTable->setTexture(texture->gpuResourceID(), 0);
+        }
 
         m_impl->renderEncoder->setRenderPipelineState(pipeline);
         m_impl->renderEncoder->setCullMode(MTL::CullModeNone);
         m_impl->renderEncoder->setArgumentTable(vertexTable, MTL::RenderStageVertex);
-        m_impl->renderEncoder->setArgumentTable(fragmentTable, MTL::RenderStageFragment);
+        if (texture) {
+          m_impl->renderEncoder->setArgumentTable(fragmentTable, MTL::RenderStageFragment);
+        }
 
         m_impl->renderEncoder->setDepthStencilState(m_impl->depthState);
 
         m_impl->renderEncoder->drawPrimitives(
             MTL::PrimitiveTypeTriangle,
             0,
-            pMesh.vertexCount,
+            pMesh.vertices.size(),
             1
         );
 

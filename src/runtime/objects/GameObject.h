@@ -4,16 +4,19 @@
 #include <memory>
 #include <string>
 
-#include "../../rendering/RenderTypes.h"
-#include "CoreTypes.h"
+#include "../RuntimeTypes.h"
+#include "Texture.h"
 
-namespace Anjean::Core
+namespace Anjean::Runtime
 {
     class GameObject
     {
       public:
+        uint32_t id;
         Transform transform;
         Mesh mesh;
+        std::optional<Texture> texture;
+
         virtual GameObjectType getGameObjectType(){
           return ANJEAN_GAMEOBJECT;
         };

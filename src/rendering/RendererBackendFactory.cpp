@@ -12,10 +12,10 @@
     #include "backends/vulkan/VulkanRendererBackend.h"
 #endif
 
-namespace Anjean
+namespace Anjean::Rendering
 {
     std::unique_ptr<IRenderBackend> CreateRendererBackend(
-        Window& window,
+        Anjean::Window& window,
         const RendererConfig& config
     )
     {

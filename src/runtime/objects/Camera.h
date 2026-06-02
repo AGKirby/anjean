@@ -5,7 +5,7 @@
 
 #include "GameObject.h"
 
-namespace Anjean::Core
+namespace Anjean::Runtime
 {
     class Camera : public GameObject
     {

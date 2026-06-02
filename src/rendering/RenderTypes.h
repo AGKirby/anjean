@@ -4,7 +4,9 @@
 #include <cstdint>
 #include <simd/simd.h>
 
-namespace Anjean
+#include "../Core/Core.h"
+
+namespace Anjean::Rendering
 {
     struct Color
     {
@@ -50,17 +52,16 @@ namespace Anjean
         float textureCoordinate[2];
     };
     
-    struct TexturedVertex3D
+    struct Vertex3D
     {
         float position[3];
         float textureCoordinate[2];
     };
 
-    struct Mesh
+    struct TexturedVertex3D
     {
-        BufferHandle vertexBuffer;
-        std::uint32_t vertexCount = 0;
-
+        float position[3];
+        float textureCoordinate[2];
     };
 
     struct BufferDesc
@@ -76,6 +77,14 @@ namespace Anjean
         int channels = 0;
         const char* filename = nullptr;
         std::size_t size = 0;
+    };
+
+    struct Mesh
+    {
+        BufferHandle vertexBuffer;
+        std::uint32_t vertexCount = 0;
+        std::vector<Anjean::Core::MeshVertex> vertices;
+        std::optional<TextureDesc> textureDesc;
     };
 
     struct PipelineDesc
