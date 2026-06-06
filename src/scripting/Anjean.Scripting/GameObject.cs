@@ -95,4 +95,5 @@ public abstract class GameObject
 
     public virtual void Start() {}
     public virtual void Update() {}
+    public virtual void PhysicsUpdate(float deltaTime) {}
 }

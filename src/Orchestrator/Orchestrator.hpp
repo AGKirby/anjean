@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include "../runtime/Runtime.h"
 #include "../runtime/RuntimeTypes.h"
 #include "../runtime/objects/GameObject.h"
@@ -29,5 +30,18 @@ namespace Anjean::Orchestrator {
       void PostToRenderer();
       void HandleSDLEvent(const SDL_Event& event);
       void Tick();
+      void PhysicsTick(float deltaTime);
+
+    private:
+        using Clock = std::chrono::steady_clock;
+
+        Clock::time_point lastFrameTime;
+
+        double physicsAccumulator = 0.0;
+
+        static constexpr double FIXED_PHYSICS_DELTA = 1.0 / 60.0;
+
+        static constexpr int MAX_PHYSICS_STEPS_PER_FRAME = 5;
+
   };
 }

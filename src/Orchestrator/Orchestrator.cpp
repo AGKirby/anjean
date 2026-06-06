@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include "Orchestrator.hpp"
 
@@ -15,35 +16,10 @@
 namespace Anjean::Orchestrator
 {
   Orchestrator::Orchestrator() {
+    lastFrameTime = Clock::now();
+
     runtime = new Anjean::Runtime::Runtime();
     renderState = RendererState();
-
-    /** Temp */
-    // Runtime::GameObject testGameObject{};
-    // testGameObject.transform.position.x = 0;
-    // testGameObject.transform.position.y = 0;
-    // testGameObject.transform.position.z = -2;
-    // testGameObject.transform.rotation.x = 0;
-    // testGameObject.transform.rotation.y = 45;
-    // testGameObject.transform.rotation.z = 0;
-    // testGameObject.transform.scale.x = 1;
-    // testGameObject.transform.scale.y = 1;
-    // testGameObject.transform.scale.z = 1;
-    // testGameObject.mesh = Runtime::Mesh();
-    // testGameObject.mesh.value().id = runtime->getAllMeshes().at(0).id;
-    // testGameObject.mesh.value().vertexCount = runtime->getAllMeshes().at(0).vertexCount;
-    // testGameObject.mesh.value().vertices = runtime->getAllMeshes().at(0).vertices;
-    // Runtime::Texture tempTexture{};
-    // tempTexture.filename="text.png";
-    // tempTexture.width=36;
-    // tempTexture.height=36;
-    // tempTexture.channels=4;
-    // testGameObject.texture = tempTexture;
-
-    // runtime->sceneObjects.emplace_back(std::move(testGameObject));
-    // Runtime::GameObject testGameObject{};
-
-  // runtime->sceneObjects.emplace_back(testGameObject);
 
     try
     {
@@ -110,7 +86,43 @@ namespace Anjean::Orchestrator
   }
 
   void Orchestrator::Tick() {
+    auto now = Clock::now();
+
+    double frameDelta = std::chrono::duration<double>(
+        now - lastFrameTime
+    ).count();
+
+    lastFrameTime = now;
+
+    if (frameDelta > 0.25)
+    {
+        frameDelta = 0.25;
+    }
+
+    physicsAccumulator += frameDelta;
+
     runtime->beginTick();
+
+    int physicsSteps = 0;
+
+    while (
+        physicsAccumulator >= FIXED_PHYSICS_DELTA &&
+        physicsSteps < MAX_PHYSICS_STEPS_PER_FRAME
+    )
+    {
+        PhysicsTick(static_cast<float>(FIXED_PHYSICS_DELTA));
+
+        physicsAccumulator -= FIXED_PHYSICS_DELTA;
+        physicsSteps++;
+    }
+
+    // If we hit the safety cap, drop leftover time
+    if (physicsSteps == MAX_PHYSICS_STEPS_PER_FRAME)
+    {
+        physicsAccumulator = 0.0;
+    }
+
+
     runtime->executeTick();
     
 
@@ -192,4 +204,11 @@ namespace Anjean::Orchestrator
     runtime->endTick();
 
   };
+
+  void Orchestrator::PhysicsTick(float deltaTime)
+  {
+      // Later:
+      runtime->executePhysicsTick(deltaTime);
+      // physicsWorld.step(deltaTime);
+  }
 }

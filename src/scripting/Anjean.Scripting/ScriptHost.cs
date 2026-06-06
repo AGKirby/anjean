@@ -106,6 +106,15 @@ public static int CreateGameObjectScript(IntPtr scriptNamePtr, uint nativeObject
     }
     
     [UnmanagedCallersOnly]
+    public static void PhysicsUpdateAll(float deltaTime)
+    {
+        foreach (GameObject obj in ActiveObjects)
+        {
+            obj.PhysicsUpdate(deltaTime);
+        }
+    }
+    
+    [UnmanagedCallersOnly]
     public static int StartMainScene()
     {
         if (!SceneTypes.TryGetValue("Main", out Type? sceneType))

@@ -160,6 +160,20 @@ namespace Anjean::Runtime
         {
             throw std::runtime_error("Failed to get ScriptHost.UpdateAll.");
         }
+        
+        rc = loadAssemblyAndGetFunctionPointer(
+            scriptingDllPath.c_str(),
+            "Anjean.ScriptHost, Anjean.Scripting",
+            "PhysicsUpdateAll",
+            UNMANAGEDCALLERSONLY_METHOD,
+            nullptr,
+            reinterpret_cast<void**>(&physicsUpdateAllFn)
+        );
+
+        if (rc != 0 || !physicsUpdateAllFn)
+        {
+            throw std::runtime_error("Failed to get ScriptHost.UpdateAll.");
+        }
 
         std::cout << "Loaded C# scripting host\n";
     }
@@ -205,6 +219,15 @@ namespace Anjean::Runtime
         if (updateAllFn)
         {
             updateAllFn();
+        }
+    
+    }
+    
+    void ScriptingEngine::physicsUpdateAll(float deltaTime)
+    {
+        if (physicsUpdateAllFn)
+        {
+            physicsUpdateAllFn(deltaTime);
         }
     }
     

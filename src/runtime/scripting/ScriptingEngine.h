@@ -25,6 +25,7 @@ namespace Anjean::Runtime
         );
 
         void updateAll();
+        void physicsUpdateAll(float deltaTime);
         void startMainScene();
 
     private:
@@ -34,10 +35,12 @@ namespace Anjean::Runtime
         using StartMainSceneFn = int (*)();
         using CreateGameObjectScriptFn = int (*)(const char*, std::uint32_t);
         using UpdateAllFn = void (*)();
+        using PhysicsUpdateAllFn = void (*)(float deltaTime);
 
         LoadGameAssemblyFn loadGameAssemblyFn = nullptr;
         StartMainSceneFn startMainSceneFn = nullptr;
         CreateGameObjectScriptFn createGameObjectScriptFn = nullptr;
         UpdateAllFn updateAllFn = nullptr;
+        PhysicsUpdateAllFn physicsUpdateAllFn = nullptr;
     };
 }

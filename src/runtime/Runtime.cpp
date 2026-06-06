@@ -48,6 +48,11 @@ namespace Anjean::Runtime
     void Runtime::executeTick()
     {
         scriptingEngine.updateAll();
+    
+    }
+    void Runtime::executePhysicsTick(float deltaTime)
+    {
+        scriptingEngine.physicsUpdateAll(deltaTime);
     }
 
 

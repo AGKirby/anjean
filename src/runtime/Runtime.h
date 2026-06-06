@@ -21,6 +21,7 @@ namespace Anjean::Runtime
         void beginTick();
         void executeTick();
         void endTick();
+        void executePhysicsTick(float deltaTime);
 
         GameObject& createGameObject();
         Camera& createCamera();
