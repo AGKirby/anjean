@@ -48,10 +48,6 @@ fragment float4 sprite_fragment_shader(
     texture2d<float, access::sample> baseColor [[texture(0)]],
     constant float &elapsedTime [[buffer(0)]]
 ) {
-    float2 uv = in.textureCoordinate;
-    constexpr sampler s(mag_filter::nearest, min_filter::nearest);
-    return baseColor.sample(s, uv);
-}
     // float textureWidth = baseColor.get_width();
     // float textureHeight = baseColor.get_height();
     // float frameWidth = 256;
@@ -59,14 +55,19 @@ fragment float4 sprite_fragment_shader(
     // float uVFW = frameWidth / textureWidth;
     // float uVFH = frameHeight / textureHeight;
     // float totalFrames = (textureHeight/frameHeight) * (textureWidth / frameWidth);
-    // float fps = 2;
+    // float fps = 60;
     // float frameTime = 1/fps;
     // float animDur = frameTime * totalFrames;
-    // int currentFrame = floor(elapsedTime/frameTime)-(floor(elapsedTime/animDur)*totalFrames);
+    // int currentFrame = floor(fmod(elapsedTime,animDur)/frameTime);
     // int framesPerRow = textureWidth/frameWidth;
     // int currentRow = floor(float(currentFrame)/float(framesPerRow)); 
+    // int currentCol = currentFrame-(framesPerRow*currentRow);
     // int numRows = floor(textureHeight/frameHeight);
-    // float newU = in.textureCoordinate.x*uVFW+((currentFrame-(framesPerRow*currentRow))*uVFW);
-    // float newV = in.textureCoordinate.y*uVFH+(currentRow*uVFH);
+    // float newU = uVFW*(in.textureCoordinate.x+currentCol);
+    // float newV = uVFH*(in.textureCoordinate.y+currentRow);
 
     // float2 uv = float2(newU, newV);
+    float2 uv = in.textureCoordinate;
+    constexpr sampler s(mag_filter::nearest, min_filter::nearest);
+    return baseColor.sample(s, uv);
+}

@@ -119,15 +119,15 @@ namespace Anjean::Orchestrator
 
     if (renderer) {
       renderer->beginFrame({ 0.1f, 0.1f, 0.12f, 1.0f });
-      for (Runtime::GameObject gO : gameObjectsToRender) {
+      for (Runtime::GameObject* gO : gameObjectsToRender) {
         Rendering::ObjectUniformHandle objectUniformHandle;
         objectUniformHandle.modelTranslation = {
           simd_make_float4(1,0,0,0),
           simd_make_float4(0,1,0,0),
           simd_make_float4(0,0,1,0),
-          simd_make_float4(gO.transform.position.x,gO.transform.position.y,gO.transform.position.z,1)
+          simd_make_float4(gO->transform.position.x,gO->transform.position.y,gO->transform.position.z,1)
         };
-        objectUniformHandle.modelRot = Rendering::makeRotationY(gO.transform.rotation.y);
+        objectUniformHandle.modelRot = Rendering::makeRotationY(gO->transform.rotation.y);
         objectUniformHandle.modelScale = {
           simd_make_float4(1,0,0,0),
           simd_make_float4(0,1,0,0),
@@ -162,10 +162,10 @@ namespace Anjean::Orchestrator
           }
         );
         objectUniformHandle.viewProjection = matrix_multiply(projectionMatrix, cameraMatrix);
-        auto meshIt = renderState.runtimeRendererMeshMap.find(gO.mesh.value().id);
+        auto meshIt = renderState.runtimeRendererMeshMap.find(gO->mesh.value().id);
 
         if (meshIt == renderState.runtimeRendererMeshMap.end()) {
-            SDL_Log("Mesh id not found: %u", gO.mesh.value().id);
+            SDL_Log("Mesh id not found: %u", gO->mesh.value().id);
             continue;
         }
 
@@ -173,8 +173,8 @@ namespace Anjean::Orchestrator
 
         std::optional<Rendering::TextureHandle> texture = std::nullopt;
 
-        if (gO.texture.has_value()) {
-          auto textureIt = renderState.runtimeTextureRendererTextureHandleMap.find(gO.texture.value().filename);
+        if (gO->texture.has_value()) {
+          auto textureIt = renderState.runtimeTextureRendererTextureHandleMap.find(gO->texture.value().filename);
           if (textureIt != renderState.runtimeTextureRendererTextureHandleMap.end()) {
             texture = textureIt->second;
           } 

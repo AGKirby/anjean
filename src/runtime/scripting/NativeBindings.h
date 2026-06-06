@@ -20,6 +20,20 @@ extern "C"
         float z;
     };
 
+        int Anjean_Runtime_CreateGameObject(
+        std::uint32_t* outGameObjectId
+    );
+
+    int Anjean_Runtime_CreateCamera(
+        std::uint32_t* outCameraId
+    );
+
+    int Anjean_Runtime_SetCurrentCamera(
+        std::uint32_t cameraId
+    );
+    
+    int Anjean_Runtime_GetCurrentCamera(std::uint32_t* outCameraId);
+    
     int Anjean_GameObject_GetPosition(
         std::uint32_t gameObjectId,
         AnjeanVec3* outPosition
@@ -42,6 +56,27 @@ extern "C"
       std::uint32_t gameObjectId,
       std::uint32_t meshId
     );
+
+    int Anjean_Camera_SetFieldOfView(
+        std::uint32_t cameraId,
+        float fieldOfView
+    );
+
+    int Anjean_Camera_SetNearClippingPlane(
+        std::uint32_t cameraId,
+        float nearClippingPlane
+    );
+
+    int Anjean_Camera_SetFarClippingPlane(
+        std::uint32_t cameraId,
+        float farClippingPlane
+    );
+
+    int Anjean_Camera_SetAspectRatio(
+        std::uint32_t cameraId,
+        float aspectRatio
+    );
+
     
     int Anjean_Input_IsKeyDown(int KeyCode);
 }

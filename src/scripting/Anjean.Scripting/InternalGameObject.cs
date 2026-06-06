@@ -2,7 +2,9 @@ namespace Anjean;
 
 internal class InternalGameObject
 {
-    private readonly uint id;
+    protected readonly uint id;
+
+    internal uint Id => id;
 
     internal InternalGameObject(uint id)
     {
@@ -43,9 +45,7 @@ internal class InternalGameObject
 
             if (rc != 0)
             {
-                throw new InvalidOperationException(
-                    $"Failed to get position. rc={rc}"
-                );
+                throw new InvalidOperationException($"Failed to get position. rc={rc}");
             }
 
             return position;
@@ -57,9 +57,7 @@ internal class InternalGameObject
 
             if (rc != 0)
             {
-                throw new InvalidOperationException(
-                    $"Failed to set position. rc={rc}"
-                );
+                throw new InvalidOperationException($"Failed to set position. rc={rc}");
             }
         }
     }

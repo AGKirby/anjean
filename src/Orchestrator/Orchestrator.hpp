@@ -20,7 +20,7 @@ namespace Anjean::Orchestrator {
       Orchestrator();
       Anjean::Runtime::Runtime* runtime;
       Anjean::Rendering::Renderer* renderer;
-      std::vector<Runtime::GameObject> gameObjectsToRender;
+      std::vector<Runtime::GameObject*> gameObjectsToRender;
       Runtime::Camera currentCamera;
       RendererState renderState;
       void GetRendererData();

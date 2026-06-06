@@ -1,5 +1,3 @@
-using System.Runtime;
-
 namespace Anjean;
 
 public abstract class GameObject
@@ -10,59 +8,79 @@ public abstract class GameObject
 
     public Transform Transform { get; private set; } = null!;
 
-    public Mesh? Mesh { get; set; } = null;
+    public Mesh? Mesh { get; private set; }
+    public Texture? Texture { get; private set; }
 
-    public Texture? Texture { get; set; } = null;
-
-    public enum PropsNames
+    public class Props
     {
-        TransformPosition,
-        Mesh,
-        Texture
+        protected Props() {}
+
+        public static readonly PropKey<Vec3> TransformPosition =
+            new("GameObject.TransformPosition");
+
+        public static readonly PropKey<Mesh?> Mesh =
+            new("GameObject.Mesh");
+
+        public static readonly PropKey<Texture?> Texture =
+            new("GameObject.Texture");
     }
-    public Dictionary<PropsNames, object> Props { get; set; } = new(){
-      [PropsNames.TransformPosition] = new Vec3(0, 0, 0)
+
+    public Dictionary<IPropKey, object?> PropValues { get; private set; } = new()
+    {
+        [Props.TransformPosition] = new Vec3(0, 0, 0)
     };
 
-    internal void Attach(uint id, Dictionary<PropsNames, object>? props = null)
+    internal void Attach(Dictionary<IPropKey, object?>? props = null)
     {
         if (props is not null)
         {
-            Props = props;
+            PropValues = props;
         }
 
-        InternalGameObject = new InternalGameObject(id);
+        InternalGameObject = CreateInternalObject();
         Transform = new Transform(InternalGameObject);
 
         Transform.Position = GetProp(
-            PropsNames.TransformPosition,
+            Props.TransformPosition,
             new Vec3(0, 0, 0)
         );
 
-        Mesh? mesh = GetProp<Mesh?>(
-            PropsNames.Mesh,
-            null
-        );
+        Mesh = GetProp<Mesh?>(Props.Mesh, null);
 
-        if (mesh is not null)
+        if (Mesh is not null)
         {
-            InternalGameObject.SetMesh(mesh.Id);
+            InternalGameObject.SetMesh(Mesh.Id);
         }
 
-        Texture? texture = GetProp<Texture?>(
-            PropsNames.Texture,
-            null
-        );
+        Texture = GetProp<Texture?>(Props.Texture, null);
 
-        if (texture is not null)
+        if (Texture is not null)
         {
-            InternalGameObject.SetTexture(texture);
+            InternalGameObject.SetTexture(Texture);
         }
+
+        ApplyProps();
     }
 
-    protected T GetProp<T>(PropsNames name, T fallback)
+    internal virtual InternalGameObject CreateInternalObject()
     {
-        if (!Props.TryGetValue(name, out object? value))
+        int rc = Native.Anjean_Runtime_CreateGameObject(out uint id);
+
+        if (rc != 0)
+        {
+            throw new InvalidOperationException(
+                $"Failed to create native game object. rc={rc}"
+            );
+        }
+
+        return new InternalGameObject(id);
+    }
+
+    protected virtual void ApplyProps() {}
+
+    protected T GetProp<T>(PropKey<T> key, T fallback)
+    {
+        if (!PropValues.TryGetValue(key, out object? value))
         {
             return fallback;
         }
@@ -74,8 +92,6 @@ public abstract class GameObject
 
         return typedValue;
     }
-
-    public virtual void AssignProps() {}
 
     public virtual void Start() {}
     public virtual void Update() {}

@@ -63,38 +63,39 @@ public static class ScriptHost
         Console.WriteLine($"Total scripts registered: {ScriptTypes.Count}");
         return 0;
     }
+
     [UnmanagedCallersOnly]
-    public static int CreateGameObjectScript(IntPtr scriptNamePtr, uint nativeObjectId)
+public static int CreateGameObjectScript(IntPtr scriptNamePtr, uint nativeObjectId)
+{
+    string? scriptName = Marshal.PtrToStringUTF8(scriptNamePtr);
+
+    Console.WriteLine($"Creating script: {scriptName}");
+
+    if (string.IsNullOrWhiteSpace(scriptName))
+        return -1;
+
+    if (!ScriptTypes.TryGetValue(scriptName, out Type? scriptType))
     {
-        string? scriptName = Marshal.PtrToStringUTF8(scriptNamePtr);
+        Console.WriteLine("Known scripts:");
 
-        Console.WriteLine($"Creating script: {scriptName}");
-
-        if (string.IsNullOrWhiteSpace(scriptName))
-            return -1;
-
-        if (!ScriptTypes.TryGetValue(scriptName, out Type? scriptType))
+        foreach (string key in ScriptTypes.Keys)
         {
-            Console.WriteLine("Known scripts:");
-
-            foreach (string key in ScriptTypes.Keys)
-            {
-                Console.WriteLine($"- {key}");
-            }
-
-            return -2;
+            Console.WriteLine($"- {key}");
         }
 
-        var script = (GameObject)Activator.CreateInstance(scriptType)!;
-        script.Attach(nativeObjectId);
-
-        ActiveObjects.Add(script);
-
-        script.Start();
-
-        return 0;
+        return -2;
     }
 
+    var script = (GameObject)Activator.CreateInstance(scriptType)!;
+
+    script.Attach();
+
+    ActiveObjects.Add(script);
+
+    script.Start();
+
+    return 0;
+}
     [UnmanagedCallersOnly]
     public static void UpdateAll()
     {
@@ -109,24 +110,17 @@ public static class ScriptHost
     {
         if (!SceneTypes.TryGetValue("Main", out Type? sceneType))
         {
-
             return -2;
         }
 
         var scene = (SceneDefinition)Activator.CreateInstance(sceneType)!;
-        
+
         foreach (SceneObjectDefinition sceneObject in scene.StartUp())
         {
-            int rc = Native.Anjean_Runtime_CreateGameObject(out uint runtimeId);
-
-            if (rc != 0)
-            {
-                return rc;
-            }
-
             var gameObject = (GameObject)Activator.CreateInstance(sceneObject.ObjectType)!;
 
-            gameObject.Attach(runtimeId, sceneObject.Props);
+            gameObject.Attach(sceneObject.Props);
+
             ActiveObjects.Add(gameObject);
 
             gameObject.Start();
@@ -134,6 +128,5 @@ public static class ScriptHost
 
         return 0;
     }
-
 
 }

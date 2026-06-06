@@ -11,49 +11,34 @@ namespace Anjean::Runtime
     Runtime::Runtime()
     {
         inputManager = InputManager();
-        currentCamera = Camera();
-        currentCamera.transform.position = {0,0,0};
-        currentCamera.transform.rotation = {0,0,0};
-        currentCamera.transform.scale = {1,1,1};
-        sceneObjects = std::vector<GameObject>{};
+
         scriptingEngine.bindRuntime(this);
         BindNativeRuntime(this);
+
         setenv(
             "ANJEAN_NATIVE_LIBRARY",
             "/Users/caleb/repos/anjean/build/libAnjean.Native.dylib",
             1
         );
+
         scriptingEngine.load(
-          "/Users/caleb/repos/game-test/TestGame/.anjean/Anjean.Scripting.runtimeconfig.json",
-          "/Users/caleb/repos/game-test/TestGame/.anjean/Anjean.Scripting.dll"
+            "/Users/caleb/repos/game-test/TestGame/.anjean/Anjean.Scripting.runtimeconfig.json",
+            "/Users/caleb/repos/game-test/TestGame/.anjean/Anjean.Scripting.dll"
         );
 
-        scriptingEngine.loadGameAssembly(
-            "/Users/caleb/repos/game-test/TestGame/.anjean/bin/Debug/net8.0/TestGame.dll"
-        );
-        
         scriptingEngine.loadGameAssembly(
             "/Users/caleb/repos/game-test/TestGame/.anjean/bin/Debug/net8.0/TestGame.dll"
         );
 
         std::filesystem::path currentPath = std::filesystem::current_path();
 
-        if (!std::filesystem::exists(currentPath.concat("/Scenes/Main.cs"))) {
-          return;
+        if (!std::filesystem::exists(currentPath / "Scenes/Main.cs"))
+        {
+            return;
         }
 
         scriptingEngine.startMainScene();
-        // GameObject& player = createGameObject();
-        // scriptingEngine.createGameObjectScript("Player", player.id);
-        // player.transform.position.x = 0;
-        // player.transform.position.y = 0;
-        // player.transform.position.z = -2;
-        // player.mesh = Mesh();
-        // player.mesh.value().id = getAllMeshes().at(0).id;
-        // player.mesh.value().vertexCount = getAllMeshes().at(0).vertexCount;
-        // player.mesh.value().vertices = getAllMeshes().at(0).vertices;
     }
-
     void Runtime::beginTick()
     {
         inputManager.updateInputState();
@@ -71,18 +56,36 @@ namespace Anjean::Runtime
         inputManager.frameEvents.clear();
     }
 
-    std::vector<GameObject> Runtime::getRenderableSceneObjects() {
-      std::vector<GameObject> renderables;
-      for (GameObject go : sceneObjects) {
-        if (go.mesh.has_value()) {
-          renderables.push_back(go);
+    std::vector<GameObject*> Runtime::getRenderableSceneObjects()
+    {
+        std::vector<GameObject*> renderables;
+
+        for (auto& object : sceneObjects)
+        {
+            if (object->mesh.has_value())
+            {
+                renderables.push_back(object.get());
+            }
         }
-      }
-      return renderables;
+
+        return renderables;
     }
     
-    Camera Runtime::getCurrentCamera() {
-      return currentCamera;
+    Camera& Runtime::getCurrentCamera()
+    {
+        if (currentCameraId == 0)
+        {
+            throw std::runtime_error("No current camera has been set");
+        }
+
+        GameObject& object = getGameObjectById(currentCameraId);
+
+        if (object.getGameObjectType() != ANJEAN_GAMEOBJECT_CAMERA)
+        {
+            throw std::runtime_error("Current camera ID is not a camera");
+        }
+
+        return static_cast<Camera&>(object);
     }
 
     std::vector<Mesh> Runtime::getAllMeshes() {
@@ -214,23 +217,41 @@ namespace Anjean::Runtime
 
     GameObject& Runtime::createGameObject()
     {
-        GameObject object{};
-        object.id = static_cast<std::uint32_t>(sceneObjects.size() + 1);
+        auto object = std::make_unique<GameObject>();
+        object->id = nextGameObjectId++;
 
-        sceneObjects.emplace_back(object);
-        return sceneObjects.back();
+        GameObject& ref = *object;
+        sceneObjects.push_back(std::move(object));
+
+        return ref;
     }
 
     GameObject& Runtime::getGameObjectById(std::uint32_t id)
     {
         for (auto& object : sceneObjects)
         {
-            if (object.id == id)
+            if (object->id == id)
             {
-                return object;
+                return *object;
             }
         }
 
         throw std::runtime_error("GameObject not found");
+    }
+
+    void Runtime::setCurrentCamera(std::uint32_t cameraId)
+    {
+        currentCameraId = cameraId;
+    }
+
+    Camera& Runtime::createCamera()
+    {
+        auto camera = std::make_unique<Camera>();
+        camera->id = nextGameObjectId++;
+
+        Camera& ref = *camera;
+        sceneObjects.push_back(std::move(camera));
+
+        return ref;
     }
 }

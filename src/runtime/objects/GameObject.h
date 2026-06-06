@@ -1,8 +1,7 @@
 #pragma once
 
-#include <SDL3/SDL.h>
-#include <memory>
-#include <string>
+#include <cstdint>
+#include <optional>
 
 #include "../RuntimeTypes.h"
 #include "Texture.h"
@@ -12,13 +11,18 @@ namespace Anjean::Runtime
     class GameObject
     {
       public:
-        uint32_t id;
+        virtual ~GameObject() = default;
+
+        std::uint32_t id = 0;
+
         Transform transform;
+
         std::optional<Mesh> mesh = std::nullopt;
         std::optional<Texture> texture = std::nullopt;
 
-        virtual GameObjectType getGameObjectType(){
-          return ANJEAN_GAMEOBJECT;
-        };
+        virtual GameObjectType getGameObjectType() const
+        {
+            return ANJEAN_GAMEOBJECT;
+        }
     };
 }

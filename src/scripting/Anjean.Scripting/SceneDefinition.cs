@@ -8,7 +8,7 @@ public abstract class SceneDefinition
     }
 
     protected static SceneObjectDefinition DefineObject<TGameObject>(
-        Dictionary<GameObject.PropsNames, object> props
+        Dictionary<IPropKey, object?> props
     )
         where TGameObject : GameObject
     {

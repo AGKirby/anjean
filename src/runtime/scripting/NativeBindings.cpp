@@ -4,6 +4,7 @@
 #include "../RuntimeTypes.h"
 #include "../objects/GameObject.h"
 #include "../../Core/Core.h"
+#include "../objects/Camera.h"
 
 namespace
 {
@@ -14,6 +15,20 @@ namespace
     constexpr int ANJEAN_ERR_NULL_ARGUMENT = -2;
     constexpr int ANJEAN_ERR_GAME_OBJECT_NOT_FOUND = -3;
     constexpr int ANJEAN_ERR_UNKNOWN = -999;
+    constexpr int ANJEAN_ERR_WRONG_OBJECT_TYPE = -5;
+    constexpr int ANJEAN_ERR_MESH_NOT_FOUND = -6;
+
+    Anjean::Runtime::Camera& getCameraById(std::uint32_t cameraId)
+    {
+        auto& object = g_runtime->getGameObjectById(cameraId);
+
+        if (object.getGameObjectType() != Anjean::Runtime::ANJEAN_GAMEOBJECT_CAMERA)
+        {
+            throw std::bad_cast();
+        }
+
+        return static_cast<Anjean::Runtime::Camera&>(object);
+    }
 }
 
 namespace Anjean::Runtime
@@ -27,15 +42,15 @@ namespace Anjean::Runtime
 extern "C"
 {
   int Anjean_Runtime_CreateGameObject(std::uint32_t* outGameObjectId)
-  {
+{
     if (!g_runtime)
     {
-        return -1;
+        return ANJEAN_ERR_NO_RUNTIME;
     }
 
     if (!outGameObjectId)
     {
-        return -2;
+        return ANJEAN_ERR_NULL_ARGUMENT;
     }
 
     try
@@ -43,12 +58,217 @@ extern "C"
         auto& object = g_runtime->createGameObject();
         *outGameObjectId = object.id;
 
-        return 0;
+        return ANJEAN_OK;
     }
     catch (...)
     {
-        return -999;
+        return ANJEAN_ERR_UNKNOWN;
     }
+}
+
+  int Anjean_Runtime_CreateCamera(std::uint32_t* outCameraId)
+{
+    if (!g_runtime)
+    {
+        return ANJEAN_ERR_NO_RUNTIME;
+    }
+
+    if (!outCameraId)
+    {
+        return ANJEAN_ERR_NULL_ARGUMENT;
+    }
+
+    try
+    {
+        auto& camera = g_runtime->createCamera();
+        *outCameraId = camera.id;
+
+        return ANJEAN_OK;
+    }
+    catch (...)
+    {
+        return ANJEAN_ERR_UNKNOWN;
+    }
+}
+
+int Anjean_Camera_SetFieldOfView(
+    std::uint32_t cameraId,
+    float fieldOfView
+)
+{
+    if (!g_runtime)
+    {
+        return ANJEAN_ERR_NO_RUNTIME;
+    }
+
+    try
+    {
+        auto& camera = getCameraById(cameraId);
+        camera.fieldOfView = fieldOfView;
+
+        return ANJEAN_OK;
+    }
+    catch (const std::runtime_error&)
+    {
+        return ANJEAN_ERR_GAME_OBJECT_NOT_FOUND;
+    }
+    catch (const std::bad_cast&)
+    {
+        return ANJEAN_ERR_WRONG_OBJECT_TYPE;
+    }
+    catch (...)
+    {
+        return ANJEAN_ERR_UNKNOWN;
+    }
+}
+
+int Anjean_Camera_SetNearClippingPlane(
+    std::uint32_t cameraId,
+    float nearClippingPlane
+)
+{
+    if (!g_runtime)
+    {
+        return ANJEAN_ERR_NO_RUNTIME;
+    }
+
+    try
+    {
+        auto& camera = getCameraById(cameraId);
+        camera.nearClippingPlane = nearClippingPlane;
+
+        return ANJEAN_OK;
+    }
+    catch (const std::runtime_error&)
+    {
+        return ANJEAN_ERR_GAME_OBJECT_NOT_FOUND;
+    }
+    catch (const std::bad_cast&)
+    {
+        return ANJEAN_ERR_WRONG_OBJECT_TYPE;
+    }
+    catch (...)
+    {
+        return ANJEAN_ERR_UNKNOWN;
+    }
+}
+
+int Anjean_Camera_SetFarClippingPlane(
+    std::uint32_t cameraId,
+    float farClippingPlane
+)
+{
+    if (!g_runtime)
+    {
+        return ANJEAN_ERR_NO_RUNTIME;
+    }
+
+    try
+    {
+        auto& camera = getCameraById(cameraId);
+        camera.farClippingPlane = farClippingPlane;
+
+        return ANJEAN_OK;
+    }
+    catch (const std::runtime_error&)
+    {
+        return ANJEAN_ERR_GAME_OBJECT_NOT_FOUND;
+    }
+    catch (const std::bad_cast&)
+    {
+        return ANJEAN_ERR_WRONG_OBJECT_TYPE;
+    }
+    catch (...)
+    {
+        return ANJEAN_ERR_UNKNOWN;
+    }
+}
+
+int Anjean_Camera_SetAspectRatio(
+    std::uint32_t cameraId,
+    float aspectRatio
+)
+{
+    if (!g_runtime)
+    {
+        return ANJEAN_ERR_NO_RUNTIME;
+    }
+
+    try
+    {
+        auto& camera = getCameraById(cameraId);
+        camera.aspectRatio = aspectRatio;
+
+        return ANJEAN_OK;
+    }
+    catch (const std::runtime_error&)
+    {
+        return ANJEAN_ERR_GAME_OBJECT_NOT_FOUND;
+    }
+    catch (const std::bad_cast&)
+    {
+        return ANJEAN_ERR_WRONG_OBJECT_TYPE;
+    }
+    catch (...)
+    {
+        return ANJEAN_ERR_UNKNOWN;
+    }
+}
+
+int Anjean_Runtime_SetCurrentCamera(std::uint32_t cameraId)
+{
+    if (!g_runtime)
+    {
+        return ANJEAN_ERR_NO_RUNTIME;
+    }
+
+    try
+    {
+        auto& camera = getCameraById(cameraId);
+
+        g_runtime->setCurrentCamera(camera.id);
+
+        return ANJEAN_OK;
+    }
+    catch (const std::runtime_error&)
+    {
+        return ANJEAN_ERR_GAME_OBJECT_NOT_FOUND;
+    }
+    catch (const std::bad_cast&)
+    {
+        return ANJEAN_ERR_WRONG_OBJECT_TYPE;
+    }
+    catch (...)
+    {
+        return ANJEAN_ERR_UNKNOWN;
+    }
+}
+
+  int Anjean_Runtime_GetCurrentCamera(std::uint32_t* outCameraId)
+  {
+      if (!g_runtime)
+      {
+          return ANJEAN_ERR_NO_RUNTIME;
+      }
+
+      if (!outCameraId)
+      {
+          return ANJEAN_ERR_NULL_ARGUMENT;
+      }
+
+      try
+      {
+          *outCameraId = g_runtime->getCurrentCamera().id;
+          return ANJEAN_OK;
+      }
+      catch (const std::runtime_error&)
+      {
+          return ANJEAN_ERR_GAME_OBJECT_NOT_FOUND;
+      }
+      catch (...)
+      {
+          return ANJEAN_ERR_UNKNOWN;
+      }
   }
 
 

@@ -149,8 +149,6 @@ void initProjectAt(const std::filesystem::path& projectRoot, const std::string& 
         "global using Anjean;\n"
     );
 
-    writeFile(projectRoot / "Scripts/Player.cs", makeDefaultScript());
-
     fs::copy_file(
         scriptingRuntimeConfig,
         projectRoot / ".anjean/Anjean.Scripting.runtimeconfig.json",
