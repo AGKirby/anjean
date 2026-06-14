@@ -290,10 +290,10 @@ int Anjean_GameObject_SetMesh(std::uint32_t gameObjectId, std::uint32_t meshId) 
   try {
     auto& object = g_runtime->getGameObjectById(gameObjectId);
 
-    std::vector<Anjean::Runtime::Mesh> meshes = g_runtime->getAllMeshes();
+    std::vector<Anjean::Runtime::Mesh*> meshes = g_runtime->getAllMeshes();
 
-    for (const Anjean::Runtime::Mesh& mesh : meshes) {
-      if (mesh.id == meshId) {
+    for (Anjean::Runtime::Mesh* mesh : meshes) {
+      if (mesh->id == meshId) {
         object.mesh = mesh;
         return ANJEAN_OK;
       }

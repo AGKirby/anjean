@@ -9,6 +9,7 @@
 #include "input/InputManager.h"
 #include "objects/Camera.h"
 #include "objects/GameObject.h"
+#include "objects/NativeMeshes/Mesh.h"
 #include "objects/PhysicsBody.h"
 #include "scripting/ScriptingEngine.h"
 
@@ -23,6 +24,7 @@ namespace Anjean::Runtime {
     void executePhysicsTick(float deltaTime);
 
     GameObject& createGameObject();
+    Mesh& createMesh(Anjean::Core::MeshDescriptor meshDescriptor);
     Camera& createCamera();
 
     GameObject& getGameObjectById(std::uint32_t id);
@@ -33,7 +35,8 @@ namespace Anjean::Runtime {
     std::vector<GameObject*> getRenderableSceneObjects();
     std::vector<GameObject*> getPhysicsAwareSceneObjects();
 
-    std::vector<Mesh> getAllMeshes();
+    std::vector<Mesh*> getAllMeshes();
+    std::vector<const Mesh*> getAllMeshes() const;
     std::vector<Texture> getAllTextures();
     PhysicsBody& createPhysicsBody(Core::PhysicsBodyType type);
     PhysicsBody& getPhysicsBodyById(std::uint32_t physicsBodyId);
@@ -46,11 +49,13 @@ namespace Anjean::Runtime {
 
   private:
     std::vector<std::unique_ptr<GameObject>> sceneObjects;
+    std::vector<std::unique_ptr<Mesh>> meshes;
     std::vector<std::unique_ptr<PhysicsBody>> physicsBodies;
     std::uint32_t nextPhysicsBodyId = 1;
     std::uint32_t nextGameObjectId = 1;
+    std::uint32_t nextMeshId = 1;
+    std::uint32_t nextRuntimeObjectId = 1;
     std::uint32_t currentCameraId = 0;
-
     ScriptingEngine scriptingEngine;
   };
 } // namespace Anjean::Runtime

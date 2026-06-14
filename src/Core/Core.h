@@ -82,6 +82,12 @@ namespace Anjean::Core {
     std::vector<MeshVertex> vertices;
   };
 
+  struct MeshDescriptor {
+    std::uint32_t id = 0;
+    std::uint32_t vertexCount = 0;
+    std::vector<Anjean::Core::MeshVertex> vertices;
+  };
+
   struct Quaternion {
     float w, x, y, z;
 

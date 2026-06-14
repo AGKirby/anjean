@@ -8,6 +8,79 @@
 namespace Anjean::Runtime {
 
   Runtime::Runtime() {
+    float lw = 1.0f / 2.0f;
+    float lh = 1.0f / 2.0f;
+    float ld = 1.0f / 2.0f;
+    float hw = 41.13f / 2.0f;
+    float hh = 15.98f / 2.0f;
+    float hd = 1.0f / 2.0f;
+    decltype(Mesh::vertices) cubeVertices;
+
+    float u0 = 0.0f;
+    float u1 = 1.0f;
+    float v0 = 0.0f;
+    float v1 = 1.0f;
+
+    Anjean::Core::MeshDescriptor cubeDescriptor;
+    cubeDescriptor.vertices = {
+        // Front, +Z
+        {{-lw, -lh, ld}, {u0, v1}},
+        {{lw, -lh, ld}, {u1, v1}},
+        {{-lw, lh, ld}, {u0, v0}},
+
+        {{lw, -lh, ld}, {u1, v1}},
+        {{lw, lh, ld}, {u1, v0}},
+        {{-lw, lh, ld}, {u0, v0}},
+
+        // Back, -Z
+        {{lw, -lh, -ld}, {u0, v1}},
+        {{-lw, -lh, -ld}, {u1, v1}},
+        {{lw, lh, -ld}, {u0, v0}},
+
+        {{-lw, -lh, -ld}, {u1, v1}},
+        {{-lw, lh, -ld}, {u1, v0}},
+        {{lw, lh, -ld}, {u0, v0}},
+
+        // Top, +Y
+        {{-lw, lh, ld}, {u0, v1}},
+        {{lw, lh, ld}, {u1, v1}},
+        {{-lw, lh, -ld}, {u0, v0}},
+
+        {{lw, lh, ld}, {u1, v1}},
+        {{lw, lh, -ld}, {u1, v0}},
+        {{-lw, lh, -ld}, {u0, v0}},
+
+        // Bottom, -Y
+        {{-lw, -lh, -ld}, {u0, v1}},
+        {{lw, -lh, -ld}, {u1, v1}},
+        {{-lw, -lh, ld}, {u0, v0}},
+
+        {{lw, -lh, -ld}, {u1, v1}},
+        {{lw, -lh, ld}, {u1, v0}},
+        {{-lw, -lh, ld}, {u0, v0}},
+
+        // Left, -X
+        {{-lw, -lh, ld}, {u0, v1}},
+        {{-lw, lh, ld}, {u0, v0}},
+        {{-lw, -lh, -ld}, {u1, v1}},
+
+        {{-lw, lh, ld}, {u0, v0}},
+        {{-lw, lh, -ld}, {u1, v0}},
+        {{-lw, -lh, -ld}, {u1, v1}},
+
+        // Right, +X
+        {{lw, -lh, -ld}, {u0, v1}},
+        {{lw, lh, -ld}, {u0, v0}},
+        {{lw, -lh, ld}, {u1, v1}},
+
+        {{lw, lh, -ld}, {u0, v0}},
+        {{lw, lh, ld}, {u1, v0}},
+        {{lw, -lh, ld}, {u1, v1}},
+
+    };
+
+    createMesh(cubeDescriptor);
+
     inputManager = InputManager();
 
     scriptingEngine.bindRuntime(this);
@@ -152,97 +225,26 @@ namespace Anjean::Runtime {
     return static_cast<Camera&>(object);
   }
 
-  std::vector<Mesh> Runtime::getAllMeshes() {
-    float lw = 1.0f / 2.0f;
-    float lh = 1.0f / 2.0f;
-    float ld = 1.0f / 2.0f;
-    float hw = 41.13f / 2.0f;
-    float hh = 15.98f / 2.0f;
-    float hd = 1.0f / 2.0f;
-    decltype(Mesh::vertices) cubeVertices;
-    decltype(Mesh::vertices) mapVerts;
+  std::vector<Mesh*> Runtime::getAllMeshes() {
+    std::vector<Mesh*> result;
+    result.reserve(meshes.size());
 
-    float u0 = 0.0f;
-    float u1 = 1.0f;
-    float v0 = 0.0f;
-    float v1 = 1.0f;
+    for (auto& mesh : meshes) {
+      result.push_back(mesh.get());
+    }
 
-    cubeVertices = {
-        // Front, +Z
-        {{-lw, -lh, ld}, {u0, v1}}, {{lw, -lh, ld}, {u1, v1}}, {{-lw, lh, ld}, {u0, v0}},
+    return result;
+  }
 
-        {{lw, -lh, ld}, {u1, v1}},  {{lw, lh, ld}, {u1, v0}},  {{-lw, lh, ld}, {u0, v0}},
-    };
-    std::vector<Mesh> meshes;
-    Mesh cube;
-    cube.id = 1;
-    cube.vertexCount = 6;
-    cube.vertices = cubeVertices;
+  std::vector<const Mesh*> Runtime::getAllMeshes() const {
+    std::vector<const Mesh*> result;
+    result.reserve(meshes.size());
 
-    mapVerts = {
-        // Front, +Z
-        {{-hw, -hh, hd}, {u0, v1}},
-        {{hw, -hh, hd}, {u1, v1}},
-        {{-hw, hh, hd}, {u0, v0}},
+    for (const auto& mesh : meshes) {
+      result.push_back(mesh.get());
+    }
 
-        {{hw, -hh, hd}, {u1, v1}},
-        {{hw, hh, hd}, {u1, v0}},
-        {{-hw, hh, hd}, {u0, v0}},
-
-        // Back, -Z
-        {{hw, -hh, -hd}, {u0, v1}},
-        {{-hw, -hh, -hd}, {u1, v1}},
-        {{hw, hh, -hd}, {u0, v0}},
-
-        {{-hw, -hh, -hd}, {u1, v1}},
-        {{-hw, hh, -hd}, {u1, v0}},
-        {{hw, hh, -hd}, {u0, v0}},
-
-        // Top, +Y
-        {{-hw, hh, hd}, {u0, v1}},
-        {{hw, hh, hd}, {u1, v1}},
-        {{-hw, hh, -hd}, {u0, v0}},
-
-        {{hw, hh, hd}, {u1, v1}},
-        {{hw, hh, -hd}, {u1, v0}},
-        {{-hw, hh, -hd}, {u0, v0}},
-
-        // Bottom, -Y
-        {{-hw, -hh, -hd}, {u0, v1}},
-        {{hw, -hh, -hd}, {u1, v1}},
-        {{-hw, -hh, hd}, {u0, v0}},
-
-        {{hw, -hh, -hd}, {u1, v1}},
-        {{hw, -hh, hd}, {u1, v0}},
-        {{-hw, -hh, hd}, {u0, v0}},
-
-        // Left, -X
-        {{-hw, -hh, hd}, {u0, v1}},
-        {{-hw, hh, hd}, {u0, v0}},
-        {{-hw, -hh, -hd}, {u1, v1}},
-
-        {{-hw, hh, hd}, {u0, v0}},
-        {{-hw, hh, -hd}, {u1, v0}},
-        {{-hw, -hh, -hd}, {u1, v1}},
-
-        // Right, +X
-        {{hw, -hh, -hd}, {u0, v1}},
-        {{hw, hh, -hd}, {u0, v0}},
-        {{hw, -hh, hd}, {u1, v1}},
-
-        {{hw, hh, -hd}, {u0, v0}},
-        {{hw, hh, hd}, {u1, v0}},
-        {{hw, -hh, hd}, {u1, v1}},
-    };
-    Mesh cube2;
-    cube2.id = 2;
-    cube2.vertexCount = 36;
-    cube2.vertices = mapVerts;
-
-    meshes.push_back(cube);
-    meshes.push_back(cube2);
-
-    return meshes;
+    return result;
   }
 
   std::vector<Texture> Runtime::getAllTextures() {
@@ -305,6 +307,17 @@ namespace Anjean::Runtime {
 
     Camera& ref = *camera;
     sceneObjects.push_back(std::move(camera));
+
+    return ref;
+  }
+
+  Mesh& Runtime::createMesh(Anjean::Core::MeshDescriptor meshDescriptor) {
+    auto mesh = std::make_unique<Mesh>(*this, meshDescriptor);
+    mesh->id = nextMeshId++;
+    mesh->runtimeObjectId = nextRuntimeObjectId++;
+
+    Mesh& ref = *mesh;
+    meshes.push_back(std::move(mesh));
 
     return ref;
   }

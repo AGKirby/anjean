@@ -14,6 +14,7 @@ find_package(SDL3 REQUIRED CONFIG)
 
 add_library(anjean_core STATIC
     src/runtime/Runtime.cpp
+    src/runtime/objects/NativeMeshes/Mesh.cpp
     src/runtime/input/InputManager.cpp
     src/runtime/scripting/ScriptingEngine.cpp
 )
@@ -62,7 +63,7 @@ add_executable(anjean)
 target_sources(anjean PRIVATE
     src/main.cpp
     src/init.cpp
-
+  
     src/window/Window.cpp
     src/Orchestrator/Orchestrator.cpp
 

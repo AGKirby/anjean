@@ -32,20 +32,20 @@ namespace Anjean::Orchestrator {
       renderState.spritePipelineHandle = renderer->createSpritePipeline();
       for (const auto& rtMesh : runtime->getAllMeshes()) {
         Rendering::Mesh rendererMesh;
-        rendererMesh.vertices = rtMesh.vertices;
-        rendererMesh.vertexCount = rtMesh.vertexCount;
+        rendererMesh.vertices = rtMesh->vertices;
+        rendererMesh.vertexCount = rtMesh->vertexCount;
 
         std::pair<decltype(Rendering::BufferHandle::id),
                   std::optional<decltype(Rendering::TextureHandle::id)>>
             result = renderer->loadMeshToGPU(rendererMesh);
         Core::MeshData meshData;
         meshData.id = result.first;
-        meshData.vertices.resize(rtMesh.vertices.size());
+        meshData.vertices.resize(rtMesh->vertices.size());
 
         // Copy element by element without using operator= on the vector itself
-        std::copy(rtMesh.vertices.begin(), rtMesh.vertices.end(), meshData.vertices.begin());
+        std::copy(rtMesh->vertices.begin(), rtMesh->vertices.end(), meshData.vertices.begin());
 
-        renderState.runtimeRendererMeshMap[rtMesh.id] = meshData;
+        renderState.runtimeRendererMeshMap[rtMesh->id] = meshData;
       }
       for (const auto& texture : runtime->getAllTextures()) {
 
@@ -169,10 +169,10 @@ namespace Anjean::Orchestrator {
             {simd_make_float4(1, 0, 0, 0), simd_make_float4(0, 1, 0, 0),
              simd_make_float4(0, 0, 1, 0), simd_make_float4(0, 0, 0, 1)});
         objectUniformHandle.viewProjection = matrix_multiply(projectionMatrix, cameraMatrix);
-        auto meshIt = renderState.runtimeRendererMeshMap.find(gO->mesh.value().id);
+        auto meshIt = renderState.runtimeRendererMeshMap.find(gO->mesh.value()->id);
 
         if (meshIt == renderState.runtimeRendererMeshMap.end()) {
-          SDL_Log("Mesh id not found: %u", gO->mesh.value().id);
+          SDL_Log("Mesh id not found: %u", gO->mesh.value()->id);
           continue;
         }
 

@@ -1,5 +1,8 @@
-namespace Anjean {
+#pragma once
 
+#include <cstdint>
+
+namespace Anjean::Runtime {
   class Runtime;
 
   class RuntimeObject {
@@ -16,7 +19,9 @@ namespace Anjean {
       return *runtime_;
     }
 
+    std::uint32_t runtimeObjectId = 0;
+
   private:
     Runtime* runtime_;
   };
-} // namespace Anjean
+} // namespace Anjean::Runtime

@@ -26,7 +26,12 @@ namespace Anjean::Runtime {
 
   enum GameObjectType { ANJEAN_GAMEOBJECT, ANJEAN_GAMEOBJECT_CAMERA };
 
-  struct Mesh {
+  // struct Mesh {
+  //   std::uint32_t id = 0;
+  //   std::uint32_t vertexCount = 0;
+  //   std::vector<Anjean::Core::MeshVertex> vertices;
+  // };
+  struct MeshDescriptor {
     std::uint32_t id = 0;
     std::uint32_t vertexCount = 0;
     std::vector<Anjean::Core::MeshVertex> vertices;
