@@ -16,8 +16,6 @@
 namespace Anjean::Runtime {
   class Runtime {
   public:
-    Runtime();
-
     void beginTick();
     void executeTick();
     void endTick();
@@ -46,8 +44,13 @@ namespace Anjean::Runtime {
     std::uint32_t getGameObjectPhysicsBody(std::uint32_t gameObjectId);
     InputManager inputManager;
     Runtime* getRuntime();
+    Runtime(Runtime& other) = delete;
+    void operator=(const Runtime&) = delete;
+    static Runtime* GetInstance();
 
   private:
+    Runtime() {}
+    static Runtime* runtime_;
     std::vector<std::unique_ptr<GameObject>> sceneObjects;
     std::vector<std::unique_ptr<Mesh>> meshes;
     std::vector<std::unique_ptr<PhysicsBody>> physicsBodies;

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(anjean LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -152,6 +152,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(METAL_SHADER_SOURCE
         ${CMAKE_SOURCE_DIR}/src/rendering/backends/metal/shaders/Triangle.metal
         ${CMAKE_SOURCE_DIR}/src/rendering/backends/metal/shaders/Sprite2D.metal
+        ${CMAKE_SOURCE_DIR}/src/rendering/backends/metal/shaders/SOTA.metal
     )
 
     set(METAL_SHADER_AIR)

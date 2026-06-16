@@ -6,8 +6,18 @@
 #include <cstdlib>
 
 namespace Anjean::Runtime {
+  Runtime* Runtime::runtime_ = nullptr;
 
-  Runtime::Runtime() {
+  Runtime* Runtime::GetInstance() {
+    if (runtime_ != nullptr) {
+      return runtime_;
+    }
+
+    /**
+     * This is a safer way to create an instance. instance = new Singleton is
+     * dangeruous in case two instance threads wants to access at the same time
+     */
+    runtime_ = new Runtime();
     float lw = 1.0f / 2.0f;
     float lh = 1.0f / 2.0f;
     float ld = 1.0f / 2.0f;
@@ -79,12 +89,20 @@ namespace Anjean::Runtime {
 
     };
 
-    createMesh(cubeDescriptor);
+    Anjean::Core::MeshDescriptor planeDescriptor;
+    planeDescriptor.vertices = {
+        // Front, +Z
+        {{-lw, -lh, ld}, {u0, v1}}, {{lw, -lh, ld}, {u1, v1}}, {{-lw, lh, ld}, {u0, v0}},
 
-    inputManager = InputManager();
+        {{lw, -lh, ld}, {u1, v1}},  {{lw, lh, ld}, {u1, v0}},  {{-lw, lh, ld}, {u0, v0}},
+    };
 
-    scriptingEngine.bindRuntime(this);
-    BindNativeRuntime(this);
+    runtime_->createMesh(planeDescriptor);
+
+    runtime_->inputManager = InputManager();
+
+    runtime_->scriptingEngine.bindRuntime(runtime_);
+    BindNativeRuntime(runtime_);
 
     setenv("ANJEAN_NATIVE_LIBRARY", "/Users/caleb/repos/anjean/build/libAnjean.Native.dylib", 1);
 
@@ -115,21 +133,16 @@ namespace Anjean::Runtime {
                                "\nRun dotnet build first.");
     }
 
-    scriptingEngine.load(runtimeConfig.string(), scriptingDll.string());
+    runtime_->scriptingEngine.load(runtimeConfig.string(), scriptingDll.string());
 
-    scriptingEngine.loadGameAssembly(gameAssembly.string());
+    runtime_->scriptingEngine.loadGameAssembly(gameAssembly.string());
 
     fs::path currentPath = projectRoot;
 
-    if (!std::filesystem::exists(currentPath / "Scenes/Main.cs")) {
-      return;
-    }
+    runtime_->scriptingEngine.startMainScene();
+    return runtime_;
+  }
 
-    scriptingEngine.startMainScene();
-  }
-  Runtime* Runtime::getRuntime() {
-    return this;
-  }
   void Runtime::beginTick() {
     inputManager.updateInputState();
     inputManager.pollEvents();
@@ -321,4 +334,5 @@ namespace Anjean::Runtime {
 
     return ref;
   }
+
 } // namespace Anjean::Runtime

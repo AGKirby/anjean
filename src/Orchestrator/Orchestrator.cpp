@@ -19,7 +19,7 @@ namespace Anjean::Orchestrator {
     lastFrameTime = Clock::now();
     lastFpsPrintTime = Clock::now();
 
-    runtime = new Anjean::Runtime::Runtime();
+    runtime = Anjean::Runtime::Runtime::GetInstance();
     physicsWorld = new Anjean::Physics::Physics();
     renderState = RendererState();
 
